@@ -5,8 +5,8 @@ const config = require('./config');
 const helper = require('./helper');
 const glob = require('glob');
 const vueLoaderConfig = require('./vue-loader.conf');
-const vueWebTemp = helper.rootNode(config.templateDir);
-const hasPluginInstalled = fs.existsSync(helper.rootNode(config.pluginFilePath));
+const vueWebTemp = helper.rootOut(config.templateDir);
+const hasPluginInstalled = fs.existsSync(helper.rootOut(config.pluginFilePath));
 const isWin = /^win/.test(process.platform);
 const weexEntry = {
   'index': helper.root('entry.js')
@@ -14,8 +14,8 @@ const weexEntry = {
 
 const getEntryFileContent = (source, routerpath) => {
   let dependence = `import Vue from 'vue'\n`;
-  dependence += `import weex from 'weex-vue-render'\n`;
-  let relativePluginPath = helper.rootNode(config.pluginFilePath);
+  dependence += `const weex = require('weex-vue-render').WeexVueRender\n`;
+  let relativePluginPath = helper.rootOut(config.pluginFilePath);
   let entryContents = fs.readFileSync(source).toString();
   let contents = '';
   entryContents = dependence + entryContents;
@@ -51,74 +51,45 @@ const getEntryFile = () => {
 }
 
 // The entry file for web needs to add some library. such as vue, weex-vue-render
-// 1. src/entry.js 
-// import Vue from 'vue';
-// import weex from 'weex-vue-render';
-// weex.init(Vue);
-// 2. src/router/index.js
-// import Vue from 'vue'
 const webEntry = getEntryFile();
 
 
-const createLintingRule = () => ({
-  test: /\.(js|vue)$/,
-  loader: 'eslint-loader',
-  enforce: 'pre',
-  include: [helper.rootNode('src'), helper.rootNode('test')],
-  options: {
-    formatter: require('eslint-friendly-formatter'),
-    emitWarning: !config.dev.showEslintErrorsInOverlay
-  }
-})
-const useEslint = config.dev.useEslint ? [createLintingRule()] : []
-
-/**
- * Plugins for webpack configuration.
- */
-const plugins = [
-  /*
-   * Plugin: BannerPlugin
-   * Description: Adds a banner to the top of each generated chunk.
-   * See: https://webpack.js.org/plugins/banner-plugin/
-   */
-  new webpack.BannerPlugin({
-    banner: '// { "framework": "Vue"} \n',
-    raw: true,
-    exclude: 'Vue'
-  })
-];
+let vendorEntry 
+if(fs.pathExistsSync(path.resolve(process.cwd(), './node_modules/phantom-limb/index.js'))){
+  vendorEntry = path.resolve(process.cwd(), './node_modules/phantom-limb/index.js')
+}else{
+  vendorEntry = path.resolve(__dirname, '../node_modules/phantom-limb/index.js')
+}
 
 // Config for compile jsbundle for web.
 const webConfig = {
   entry: Object.assign(webEntry, {
-    'vendor': [path.resolve('node_modules/phantom-limb/index.js')]
+    'vendor': [vendorEntry]
   }),
   output: {
-    path: helper.rootNode('./dist'),
+    path: helper.rootOut('./dist'),
     filename: '[name].web.js'
   },
-  /**
-   * Options affecting the resolving of modules.
-   * See http://webpack.github.io/docs/configuration.html#resolve
-   */
+  resolveLoader: {
+    modules: [path.resolve(__dirname, '../node_modules'), path.resolve(process.cwd(), 'node_modules')]
+  },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
       '@': helper.resolve('src')
-    }
+    },
+    modules: [path.resolve(__dirname, '../node_modules'), path.resolve(process.cwd(), 'node_modules'),'node_modules'],
   },
-  /*
-   * Options affecting the resolving of modules.
-   *
-   * See: http://webpack.github.io/docs/configuration.html#module
-   */
   module: {
     // webpack 2.0 
-    rules: useEslint.concat([
+    rules: [
       {
         test: /\.js$/,
         use: [{
-          loader: 'babel-loader'
+          loader: 'babel-loader',
+          options: {
+            presets: [require.resolve('@vue/babel-preset-app')]
+          }
         }],
         exclude: config.excludeModuleReg
       },
@@ -127,28 +98,20 @@ const webConfig = {
         use: [{
           loader: 'vue-loader',
           options: Object.assign(vueLoaderConfig({useVue: true, usePostCSS: false}), {
-            /**
-             * important! should use postTransformNode to add $processStyle for
-             * inline style prefixing.
-             */
             optimizeSSR: false,
             postcss: [
-              // to convert weex exclusive styles.
               require('postcss-plugin-weex')(),
               require('autoprefixer')({
                 browsers: ['> 0.1%', 'ios >= 8', 'not ie < 12']
               }),
               require('postcss-plugin-px2rem')({
-                // base on 750px standard.
                 rootValue: 75,
-                // to leave 1px alone.
                 minPixelValue: 1.01
               })
             ],
             compilerModules: [
               {
                 postTransformNode: el => {
-                  // to convert vnode for weex components.
                   require('weex-vue-precompiler')()(el)
                 }
               }
@@ -158,43 +121,42 @@ const webConfig = {
         }],
         exclude: config.excludeModuleReg
       }
-    ])
+    ]
   },
-  /*
-   * Add additional plugins to the compiler.
-   *
-   * See: http://webpack.github.io/docs/configuration.html#plugins
-   */
-  plugins: plugins
+  // plugins: [
+  //   new webpack.BannerPlugin({
+  //     banner: '// { "framework": "Vue"} \n',
+  //     raw: true,
+  //     exclude: 'Vue'
+  //   })
+  // ]
 };
 // Config for compile jsbundle for native.
 const weexConfig = {
   entry: weexEntry,
   output: {
-    path: path.join(__dirname, '../dist'),
+    path: helper.rootOut('./dist'),
     filename: '[name].js'
   },
-  /**
-   * Options affecting the resolving of modules.
-   * See http://webpack.github.io/docs/configuration.html#resolve
-   */
+  resolveLoader: {
+    modules: [path.resolve(__dirname, '../node_modules'), path.resolve(process.cwd(), 'node_modules')]
+  },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
       '@': helper.resolve('src')
-    }
+    },
+    modules: [path.resolve(__dirname, '../node_modules'), path.resolve(process.cwd(), 'node_modules')],
   },
-  /*
-   * Options affecting the resolving of modules.
-   *
-   * See: http://webpack.github.io/docs/configuration.html#module
-   */
   module: {
     rules: [
       {
         test: /\.js$/,
         use: [{
-          loader: 'babel-loader'
+          loader: 'babel-loader',
+          options: {
+            presets: [require.resolve('@vue/babel-preset-app')]
+          }
         }],
         exclude: config.excludeModuleReg
       },
@@ -208,18 +170,13 @@ const weexConfig = {
       }
     ]
   },
-  /*
-   * Add additional plugins to the compiler.
-   *
-   * See: http://webpack.github.io/docs/configuration.html#plugins
-   */
-  plugins: plugins,
-  /*
-  * Include polyfills or mocks for various node stuff
-  * Description: Node configuration
-  *
-  * See: https://webpack.github.io/docs/configuration.html#node
-  */
+  plugins: [
+    new webpack.BannerPlugin({
+      banner: '// { "framework": "Vue"} \n',
+      raw: true,
+      exclude: 'Vue'
+    })
+  ],
   node: config.nodeConfiguration
 };
 

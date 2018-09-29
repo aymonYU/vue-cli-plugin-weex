@@ -1,14 +1,15 @@
 module.exports = (api, options) => {
   const pkg = {
     scripts: {
-      'mpvue:dev': "vue-cli-service mpvue './src/mpvue.js'",
-      'mpvue:build': "vue-cli-service mpvue './src/mpvue.js'  --mode 'production'"
+      'weex:dev': "vue-cli-service weex './src/weex.js'",
+      'weex:build': "vue-cli-service weex './src/weex.js'  --mode 'production'"
     },
     dependencies: {
-      'mpvue': '^1.0.13'
+      'weex': '^1.0.13',
+      "vue-router": "^3.0.1",
     },
     devDependencies: {
-      'vue-cli-plugin-mpvue': '^1.0.12'
+      'vue-cli-plugin-weex': '^1.0.6'
     }
   }
   api.extendPackage(pkg)
