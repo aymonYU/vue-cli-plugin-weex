@@ -9,15 +9,23 @@ const {
 } = require('@vue/cli-shared-utils')
 const BannerPlugin = require('vue-banner-plugin');
 
+const defaults = {
+  host: ip,
+  port: 9394,
+}
+
 module.exports = (api, options) => {
-  // if (options.pluginOptions.platform === 'weex')
+  const platform = process.argv[2];
+
   api.registerCommand(
     'weex',
     {
       description: 'use weex loader',
       usage: 'vue-cli-service weex [options] [entry]',
       options: {
-        '--mode': `specify env mode (default: development)`
+        '--mode': `specify env mode (default: development)`,
+        '--host': `specify host (default: ${defaults.host})`,
+        '--port': `specify port (default: ${defaults.port})`,
       }
     },
     async args => {
@@ -27,12 +35,20 @@ module.exports = (api, options) => {
       const isProduction = process.env.NODE_ENV === 'production'
 
       let webpackConfig = api.resolveWebpackConfig()
-      webpackConfig.entry = {'index': path.resolve(process.cwd(),'src/entry.js')};
+
+      const projectDevServerOptions = Object.assign(
+        webpackConfig.devServer || {},
+        options.devServer
+      )
+
+
+      const port = args.port || process.env.PORT || projectDevServerOptions.port || defaults.port
+      const host = args.host || process.env.HOST || projectDevServerOptions.host || defaults.host
 
       
       webpackConfig.devServer = {
-          port: 9394,
-          host: ip,
+          port,
+          host,
           contentBase: path.resolve(__dirname,'web'),
           compress: true,
           historyApiFallback: true,
@@ -72,46 +88,50 @@ module.exports = (api, options) => {
 
   )
 
-  api.chainWebpack(async (configChain, options = {}) => {
-    const isProduction = process.env.NODE_ENV === 'production'
-    configChain.entry('app').clear();
-    configChain.module.rules.delete('vue')
-    configChain.module.rule('weex')
-      .test(/\.vue(\?[^?]+)?$/)
-      .use('weex-loader')
-      .loader('weex-loader')
+  // run `vue-cli-service weex` can work here
+  if(platform === 'weex'|| platform === 'inspect'){
 
-    configChain.resolve.modules.add(path.resolve(__dirname, 'node_modules'))
+    api.chainWebpack(async (configChain, options = {}) => {
+      const isProduction = process.env.NODE_ENV === 'production'
+      configChain.entry('app').clear();
+      configChain.module.rules.delete('vue')
+      configChain.module.rule('weex')
+        .test(/\.vue(\?[^?]+)?$/)
+        .use('weex-loader')
+        .loader('weex-loader')
 
-    configChain.resolveLoader.modules.add(path.resolve(__dirname, 'node_modules'))
+      configChain.resolve.modules.add(path.resolve(__dirname, 'node_modules'))
 
-    
+      configChain.resolveLoader.modules.add(path.resolve(__dirname, 'node_modules'))
 
-    configChain.plugins.delete('html')
-    configChain.plugins.delete('preload')
-    configChain.plugins.delete("prefetch")
-    configChain.plugins.delete('vue-loader')
+      
+
+      configChain.plugins.delete('html')
+      configChain.plugins.delete('preload')
+      configChain.plugins.delete("prefetch")
+      configChain.plugins.delete('vue-loader')
 
 
-    configChain.plugin('bannerPlugin')
-    .use(BannerPlugin, [{
-      banner: '// { "framework": "Vue"} \n',
-      raw: true,
-      exclude: 'Vue'
-    }])
-
-    if(!isProduction){
-      configChain.plugin('html').use(HtmlWebpackPlugin,[{
-          inject: true,
-          title: '',
-          filename: 'index.html',
-          chunksSortMode: 'none',
-          template: path.resolve(__dirname, './web/index.html')
+      configChain.plugin('bannerPlugin')
+      .use(BannerPlugin, [{
+        banner: '// { "framework": "Vue"} \n',
+        raw: true,
+        exclude: 'Vue'
       }])
-    }else{
-      //避免分包
-      configChain.optimization.clear()
-    }
 
-  })
+      if(!isProduction){
+        configChain.plugin('html').use(HtmlWebpackPlugin,[{
+            inject: true,
+            title: '',
+            filename: 'index.html',
+            chunksSortMode: 'none',
+            template: path.resolve(__dirname, './web/index.html')
+        }])
+      }else{
+        //避免分包
+        configChain.optimization.clear()
+      }
+
+    })
+  }
 }
