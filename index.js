@@ -1,8 +1,13 @@
 const webpack = require('webpack')
-const merge = require('webpack-merge')
 const Server = require('webpack-dev-server')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 var rm = require('rimraf')
 const path = require('path')
+const ip = require('ip').address();
+const {
+  openBrowser
+} = require('@vue/cli-shared-utils')
+const BannerPlugin = require('vue-banner-plugin');
 
 module.exports = (api, options) => {
   // if (options.pluginOptions.platform === 'weex')
@@ -20,51 +25,28 @@ module.exports = (api, options) => {
         process.env.NODE_ENV = 'production'
       }
       const isProduction = process.env.NODE_ENV === 'production'
-      let { entry } = api.resolveWebpackConfig()
-      const { resolve: { alias }} = api.resolveWebpackConfig()
 
-      // 支持entry传入参数
-      if (args._[0]) {
-        entry = args._[0]
-      }
-
-      // 倒入想要传入的参数
-      entry = assetEntry(entry)
-      const options = {
-        entry
-      }
-      console.log(`using the entry file of ${entry}`)
-
-      let webpackConfig = {}
-
-      if (isProduction) {
-        
-        webpackConfig = require('./configs/webpack.prod.conf.js')(options)
-      } else {
-        webpackConfig = require('./configs/webpack.dev.conf.js')(options)
-      }
-
-      // 合并从配置中读取的配置结果
-      // webpackConfig = merge(webpackConfig, { resolve: {
-      //   alias
-      // }})
+      let webpackConfig = api.resolveWebpackConfig()
+      webpackConfig.entry = {'index': path.resolve(process.cwd(),'src/entry.js')};
 
       
+      webpackConfig.devServer = {
+          port: 9394,
+          host: ip,
+          contentBase: path.resolve(__dirname,'web'),
+          compress: true,
+          historyApiFallback: true,
+          disableHostCheck: true
+      }
+
       if(!isProduction){
-        // build source to weex_bundle with watch mode.
-        webpack(webpackConfig[0], (err, stats) => {
-          if (err) {
-            console.err('COMPILE ERROR:', err.stack)
-          }
-        })
-        let webConfig = webpackConfig[1]
+        const compile = webpack(webpackConfig)
+        const server = new Server(compile, webpackConfig.devServer);
 
-        const compile = webpack(webConfig)
-        const server = new Server(compile, webConfig.devServer);
-
-        server.listen(webConfig.devServer.port, webConfig.devServer.host, (err) => {
+        server.listen(webpackConfig.devServer.port, webpackConfig.devServer.host, (err) => {
+            openBrowser(`http://${webpackConfig.devServer.host || 'localhost'}:${webpackConfig.devServer.port}`)
             if (!err) {
-                console.log(`Project is running at http://${webConfig.devServer.host || 'localhost'}:${webConfig.devServer.port}/web/preview.html?page=index.js`);
+                console.log(`Project is running at http://${webpackConfig.devServer.host || 'localhost'}:${webpackConfig.devServer.port}`);
             } else {
                 console.error(err);
             }
@@ -73,17 +55,7 @@ module.exports = (api, options) => {
         await rm(path.resolve(process.cwd(),'dist'), err => {
           if (err) throw err
         })
-        webpack(webpackConfig[0], function (err, stats) {
-          if (err) throw err
-          process.stdout.write(stats.toString({
-            colors: true,
-            modules: false,
-            children: false,
-            chunks: false,
-            chunkModules: false
-          }) + '\n\n')
-        });
-        webpack(webpackConfig[1], function (err, stats) {
+        webpack(webpackConfig, function (err, stats) {
           if (err) throw err
           process.stdout.write(stats.toString({
             colors: true,
@@ -100,32 +72,46 @@ module.exports = (api, options) => {
 
   )
 
-  // api.chainWebpack(async (configChain, options = {}) => {
+  api.chainWebpack(async (configChain, options = {}) => {
+    const isProduction = process.env.NODE_ENV === 'production'
+    configChain.entry('app').clear();
+    configChain.module.rules.delete('vue')
+    configChain.module.rule('weex')
+      .test(/\.vue(\?[^?]+)?$/)
+      .use('weex-loader')
+      .loader('weex-loader')
 
-  // })
-}
-// weex entry 参数传入校验
-function assetEntry (entry) {
-  if (Array.isArray(entry)) {
-    if (entry.length > 1) {
-      console.error('the entry of weex do not surport multiple entries ')
-      process.exit(1)
+    configChain.resolve.modules.add(path.resolve(__dirname, 'node_modules'))
+
+    configChain.resolveLoader.modules.add(path.resolve(__dirname, 'node_modules'))
+
+    
+
+    configChain.plugins.delete('html')
+    configChain.plugins.delete('preload')
+    configChain.plugins.delete("prefetch")
+    configChain.plugins.delete('vue-loader')
+
+
+    configChain.plugin('bannerPlugin')
+    .use(BannerPlugin, [{
+      banner: '// { "framework": "Vue"} \n',
+      raw: true,
+      exclude: 'Vue'
+    }])
+
+    if(!isProduction){
+      configChain.plugin('html').use(HtmlWebpackPlugin,[{
+          inject: true,
+          title: '',
+          filename: 'index.html',
+          chunksSortMode: 'none',
+          template: path.resolve(__dirname, './web/index.html')
+      }])
+    }else{
+      //避免分包
+      configChain.optimization.clear()
     }
-    return entry[0]
-  } else if (typeof entry === 'object') {
-    if (Object.keys(entry).length > 1) {
-      console.error('the entry of weex do not surport multiple entries ')
-      process.exit(1)
-    }
-    const entryFirstKeyValue = entry[Object.keys(entry)[0]]
-    if (typeof entryFirstKeyValue === 'string') {
-      return entryFirstKeyValue
-    } else {
-      return assetEntry(entryFirstKeyValue)
-    }
-  } else if (typeof entry === 'string') {
-    return entry
-  } else {
-    return './src/main.js'
-  }
+
+  })
 }
