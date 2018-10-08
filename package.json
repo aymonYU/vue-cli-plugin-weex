@@ -1,6 +1,6 @@
 {
   "name": "vue-cli-plugin-weex",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -31,6 +31,10 @@
   "engines": {
     "node": ">= 4.0.0",
     "npm": ">= 3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aymonYU/vue-cli-plugin-weex.git"
   },
   "browserslist": [
     "> 1%",
