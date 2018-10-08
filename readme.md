@@ -11,7 +11,7 @@ npm i  vue-cli-plugin-weex -D
 ```
 
 ```
-vue invoke  vue-cli-plugin-weex
+vue invoke  vue-cli-plugin-weex && npm i
 ```
 
 ```

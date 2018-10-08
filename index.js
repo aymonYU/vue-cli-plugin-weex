@@ -127,6 +127,17 @@ module.exports = (api, options) => {
           raw: true,
           exclude: 'Vue'
         }])
+        
+      configChain.merge({
+        devServer: {
+          host: ip,
+          port: 9394,
+          contentBase: path.resolve(__dirname, 'web'),
+          compress: true,
+          historyApiFallback: true,
+          disableHostCheck: true
+        }
+      })
 
       if (!isProduction) {
         configChain.plugin('html').use(HtmlWebpackPlugin, [{
@@ -137,16 +148,7 @@ module.exports = (api, options) => {
           template: path.resolve(__dirname, './web/index.html')
         }])
 
-        configChain.merge({
-          devServer: {
-            host: ip,
-            port: 9394,
-            contentBase: path.resolve(__dirname, 'web'),
-            compress: true,
-            historyApiFallback: true,
-            disableHostCheck: true
-          }
-        })
+        
       } else {
         // 避免分包
         configChain.optimization.clear()
