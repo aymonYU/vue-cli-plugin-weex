@@ -111,6 +111,9 @@ module.exports = (api, options) => {
       configChain.plugins.delete("prefetch")
       configChain.plugins.delete('vue-loader')
 
+      configChain.externals({
+          'vue': 'Vue'
+      })
 
       configChain.plugin('bannerPlugin')
       .use(BannerPlugin, [{
@@ -131,6 +134,7 @@ module.exports = (api, options) => {
         //避免分包
         configChain.optimization.clear()
       }
+   
 
     })
   }
