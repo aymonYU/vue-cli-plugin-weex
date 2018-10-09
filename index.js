@@ -50,7 +50,7 @@ module.exports = (api, options) => {
       // defaut entry
       const entry = webpackConfig.entry
       if (JSON.stringify(entry) === '{"app":[]}') {
-        webpackConfig.entry = './src/entry/weex'
+        webpackConfig.entry = './src/weex'
       }
       // 支持entry传入参数
       if (args._[0]) {
