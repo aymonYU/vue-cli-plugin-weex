@@ -1,7 +1,7 @@
 module.exports = (api, options) => {
   const pkg = {
     scripts: {
-      'weex:dev': "vue-cli-service weex ",
+      'weex': "vue-cli-service weex ",
       'weex:build': "vue-cli-service weex  --mode 'production'"
     }
   }

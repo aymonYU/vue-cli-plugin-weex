@@ -13,7 +13,7 @@ vue add  vue-cli-plugin-weex
 ```
 
 ```
-npm run weex:dev
+npm run weex
 ```
 
 
@@ -31,7 +31,7 @@ cd test
 ```
 
 ```
-npm run weex:dev
+npm run weex
 ```
 
 
