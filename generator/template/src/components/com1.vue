@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <div class="greeting">it is working !</div>
+    <text class="greeting">this is page1</text>
   </div>
 </template>
 
