@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <div>page1 </div>
+    <div>page2 </div>
     <HelloWorld msg="Welcome to Your weex + TypeScript App"/>
   </div>
 </template>

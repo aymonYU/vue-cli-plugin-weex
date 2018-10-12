@@ -22,7 +22,7 @@ const getPages = () => {
     // Wraping the entry file for web.
     const getWebEntryFileContent = (entryPath, ) => {
         return  `
-import weex from 'weex-vue-render'
+const weex = require('weex-vue-render')
 ${fs.readFileSync(entryPath).toString()}
 /* eslint-disable no-undef */
 weex.init(Vue)

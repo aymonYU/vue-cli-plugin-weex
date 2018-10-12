@@ -30,6 +30,7 @@
       </div>
       <div class="qrcode-box">
         <a class="qrcode" id="qrcode" target="_blank"></a>
+        <a class="qrcode-tips" id="urlPath" href="https://weex-project.io/playground.html" ></a>
         <p class="qrcode-tips">Use <a target="_blank" href="https://weex-project.io/playground.html">Weex playground app</a> to scan it.</p>
         <div class="pages-box">
 
@@ -49,6 +50,9 @@
       }
       function createQRCode (url) {
         var $QR = document.querySelector('#qrcode')
+        var $urlPath = document.querySelector('#urlPath')
+        $urlPath.innerHTML = url
+        $urlPath.setAttribute('href',url)
         var QR = qrcode(0, 'L')
         url += '?_wx_tpl=' + url
         $QR.setAttribute('href', url)
