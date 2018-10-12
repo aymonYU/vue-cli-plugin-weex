@@ -8,7 +8,7 @@ const ip = require('ip').address();
 const config = {
     vueWebTemp:'src/.temp',
     sourceDir:path.resolve(process.cwd(),'src/pages'),
-    entryFilter: '**/*.js',
+    entryFilter: '**/*.ts',
 }
 
 const isWeex = process.env.PLATFORM ==='weex'

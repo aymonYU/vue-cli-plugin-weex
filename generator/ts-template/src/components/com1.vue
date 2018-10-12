@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <div>weex demo</div>
+    <div>page1 </div>
     <HelloWorld msg="Welcome to Your weex + TypeScript App"/>
   </div>
 </template>
@@ -8,7 +8,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import HelloWorld from './components/HelloWorld.vue'
+import HelloWorld from './HelloWorld.vue'
 
 @Component({
   components: {
