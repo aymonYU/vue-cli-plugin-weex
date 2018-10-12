@@ -38,4 +38,4 @@ npm run weex
 ### 特性
 1. 如果使用了@vue/cli-plugin-typescript，则此插件支持typscript
 
-2. 默认入口文件：`./src/weex`
+2. 默认入口文件：`./src/main`

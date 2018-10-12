@@ -1,8 +1,15 @@
 module.exports = (api, options) => {
   const pkg = {
     scripts: {
-      'weex': "vue-cli-service weex ",
-      'weex:build': "vue-cli-service weex  --mode 'production'"
+      'weex': "cross-env PLATFORM=weex vue-cli-service serve --open",
+      'weex:build': "cross-env PLATFORM=weex vue-cli-service build",
+      "start": "npm run serve & npm run weex ",
+      "build:all": "npm run build & npm run weex:build ",
+    },
+    "postcss": {
+      "plugins": {
+        "postcss-plugin-weex":{}
+      }
     }
   }
   api.extendPackage(pkg)
