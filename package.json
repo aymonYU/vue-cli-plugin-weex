@@ -1,6 +1,6 @@
 {
   "name": "vue-cli-plugin-weex",
-  "version": "1.0.22",
+  "version": "1.0.23-0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "postcss-plugin-px2rem": "^0.7.0",
     "weex-vue-precompiler": "^0.1.25",
     "postcss-plugin-weex": "^0.1.7",
-    "ip":"^1.1.5"
+    "ip": "^1.1.5"
   },
   "keywords": [
     "webpack",
