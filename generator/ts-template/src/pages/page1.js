@@ -1,5 +1,5 @@
 import Vue from 'vue'
 import App from '@/components/com1.vue'
 
-/* eslint-disable no-new */
+/* tslint:disable:no-new no-unused-expression*/
 new App({ el: '#root' })
