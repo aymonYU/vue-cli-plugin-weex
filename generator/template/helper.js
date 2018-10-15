@@ -6,7 +6,7 @@ const ip = require('ip').address();
 
 const vueWebTemp = 'src/.temp';
 const sourceDir = path.resolve(process.cwd(), 'src/pages')
-const entryFilter = '**/*.ts'
+const entryFilter = '**/*.js'
 
 const isWeex = process.env.PLATFORM === 'weex'
 const entries = glob.sync(`${sourceDir}/${entryFilter}`);
