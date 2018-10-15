@@ -1,4 +1,4 @@
-const {getOpenPage,getPages} = require('./helper')
+const {getOpenPage,getPages} = require('./helper.ts')
         
 module.exports = {
     pages:getPages(),
