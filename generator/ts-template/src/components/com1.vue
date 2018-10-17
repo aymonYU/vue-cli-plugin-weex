@@ -7,14 +7,15 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import Component from 'vue-class-component'
+import { Component,Prop } from 'vue-property-decorator'
 import HelloWorld from './HelloWorld.vue'
 
+// vue的typscrpt版本,component必须使用装饰器来，装饰器必须和class紧贴
 @Component({
   components: {
-  HelloWorld,
-  },
-  })
+    HelloWorld
+  }
+})
 export default class App extends Vue {
 }
 </script>

@@ -6,14 +6,14 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import Component from 'vue-class-component'
+import { Component,Prop } from 'vue-property-decorator'
 
 @Component({
-  props: {
-  msg: String
-  }
-  })
+
+})
 export default class HelloWorld extends Vue {
+  // Prop写法当成typescript的参数传入
+  @Prop(String) msg!: string
 }
 </script>
 
