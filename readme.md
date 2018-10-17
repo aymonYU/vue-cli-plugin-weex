@@ -31,7 +31,7 @@ cd test
 ```
 
 ```
-npm start
+npm run weex:dev
 ```
 
 
