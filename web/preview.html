@@ -69,8 +69,8 @@
       if (page) {
         var $preview = document.querySelector('#preview')
         var $webPageLink = document.querySelector('.web-page-link')
-        $preview.src = 'http://localhost:9395/'+page.replace('.js', '.html');
-        $webPageLink.setAttribute('href', 'http://localhost:9395/'+page.replace('.js', '.html'));
+        $preview.src = 'http://localhost:8089/'+page.replace('.js', '.html');
+        $webPageLink.setAttribute('href', 'http://localhost:8089/'+page.replace('.js', '.html'));
       }
       if (entrys) {
         var pageEntrys = decodeURI(entrys).replace('\\', '/').split('|');

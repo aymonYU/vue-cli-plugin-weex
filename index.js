@@ -70,7 +70,7 @@ module.exports = (api, options) => {
       }else {
         configChain.merge({
           devServer: {
-            port: 9395,
+            port: 8089,
           }
         })
         configChain.externals({
