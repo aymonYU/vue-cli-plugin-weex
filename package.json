@@ -17,6 +17,7 @@
     "postcss-plugin-px2rem": "^0.7.0",
     "weex-vue-precompiler": "^0.1.25",
     "postcss-plugin-weex": "^0.1.7",
+    "vue-loader": "^12.2.0",
     "ip": "^1.1.5"
   },
   "keywords": [
@@ -26,7 +27,6 @@
     "weex"
   ],
   "peerDependencies": {
-    "@vue/cli-shared-utils": "^3.0.4"
   },
   "devDependencies": {},
   "engines": {
