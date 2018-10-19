@@ -18,12 +18,15 @@ const getPages = () => {
 
     // Wraping the entry file for web.
     const getWebEntryFileContent = (entryPath, ) => {
-        return `
+        let insertStr = `
+import Vue from 'vue'
 const weex = require('weex-vue-render')
-${fs.readFileSync(entryPath).toString()}
+
 /* eslint-disable no-undef */
 weex.init(Vue)
-        `
+                `
+return  fs.readFileSync(entryPath).toString().replace("import Vue from 'vue'",insertStr)
+        
     }
 
     let entryAr = entries.map(entry => {

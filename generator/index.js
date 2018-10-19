@@ -6,6 +6,9 @@ module.exports = (api, options) => {
       'weex:build': "cross-env PLATFORM=weex vue-cli-service build",
       "weex:dev": "npm run serve & npm run weex "
     },
+    "dependencies": {
+      "weex-vue-render": "^1.0.33"
+    },
     "postcss": {
       "plugins": {
         "postcss-plugin-weex":{}

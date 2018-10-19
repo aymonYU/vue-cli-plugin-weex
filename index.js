@@ -73,9 +73,6 @@ module.exports = (api, options) => {
           port: 8089,
         }
       })
-      configChain.externals({
-        'weex-vue-render': 'weex'
-      })
       configChain.module.rules.delete('vue')
 
       configChain.module.rule('vue')
@@ -83,63 +80,20 @@ module.exports = (api, options) => {
         .use('vue-loader')
         .loader('vue-loader')
         .options({
-          loaders: {
-            less: generateLoaders('less'),
-            // sass: generateLoaders('sass'),
-            // scss: generateLoaders('sass'),
-            // stylus: generateLoaders('stylus'),
-            // styl: generateLoaders('stylus')
-          },
-          optimizeSSR: false,
-          postcss: [
-            // to convert weex exclusive styles.
-            require('postcss-plugin-weex')(),
-            require('autoprefixer')({
-              browsers: ['> 0.1%', 'ios >= 8', 'not ie < 12']
-            }),
-            require('postcss-plugin-px2rem')({
-              // base on 750px standard.
-              rootValue: 75,
-              // to leave 1px alone.
-              minPixelValue: 1.01
-            })
-          ],
-          compilerModules: [{
-            postTransformNode: el => {
-              // to convert vnode for weex components.
-              require('weex-vue-precompiler')()(el)
-            }
-          }]
-
-
-        })
+          compilerOptions:{
+              modules:[
+                  {
+                    postTransformNode: el => {
+                      // to convert vnode for weex components.
+                      require('weex-vue-precompiler')()(el)
+                    }
+                  }
+                ]
+          }
+          
+      })
     }
   })
 
 }
 
-function generateLoaders(loader) {
-  const sourceMap = true
-  let loaders = [{
-    loader: 'css-loader',
-    options: {
-      sourceMap
-    }
-  }, {
-    loader: 'postcss-loader',
-    options: {
-      sourceMap
-    }
-  }]
-  if (loader) {
-    loaders.push({
-      loader: loader + '-loader',
-      options: {
-        sourceMap
-      }
-    })
-  }
-
-  return ['vue-style-loader'].concat(loaders)
-
-}
