@@ -2,11 +2,7 @@ const path = require('path')
 const BannerPlugin = require('vue-banner-plugin')
 
 module.exports = (api, options) => {
-  const platform = process.env.PLATFORM
-
-
-  // run `vue-cli-service weex` can work here
-
+  
   api.chainWebpack(async (configChain, options = {}) => {
     const isProduction = process.env.NODE_ENV === 'production'
 
@@ -21,14 +17,26 @@ module.exports = (api, options) => {
           appendTsSuffixTo: [/\.vue$/]
         })
     }
-    if (platform === 'weex') {
+    const platform = process.env.PLATFORM
 
+    if (platform === 'weex') {
       configChain.module.rules.delete('vue')
 
       configChain.module.rule('weex')
         .test(/\.vue$/)
         .use('weex-loader')
         .loader('weex-loader')
+        .options({
+          loaders: {
+            less: generateLoaders('less'),
+            sass: generateLoaders('sass'),
+            scss: generateLoaders('scss'),
+            stylus: generateLoaders('stylus'),
+            styl: generateLoaders('styl'),
+          },
+          cssSourceMap: false,
+          cacheBusting: true
+        })
 
       configChain.plugins.delete('vue-loader')
       configChain.plugins.delete('hmr')
@@ -37,7 +45,6 @@ module.exports = (api, options) => {
         .test(/hot(\/|\\)dev-server/)
         .use('null-loader')
         .loader('null-loader')
-
 
       configChain.module.rule('no-dev-server')
         .test(/webpack-dev-server(\/|\\)client/)
@@ -67,6 +74,7 @@ module.exports = (api, options) => {
         // 避免分包
         configChain.optimization.clear()
       }
+
     } else {
       configChain.merge({
         devServer: {
@@ -74,26 +82,31 @@ module.exports = (api, options) => {
         }
       })
       configChain.module.rules.delete('vue')
-
       configChain.module.rule('vue')
         .test(/\.vue$/)
         .use('vue-loader')
         .loader('vue-loader')
         .options({
-          compilerOptions:{
-              modules:[
-                  {
-                    postTransformNode: el => {
-                      // to convert vnode for weex components.
-                      require('weex-vue-precompiler')()(el)
-                    }
-                  }
-                ]
+          compilerOptions: {
+            modules: [{
+              postTransformNode: el => {
+                // to convert vnode for weex components.
+                require('weex-vue-precompiler')()(el)
+              }
+            }]
           }
-          
-      })
+
+        })
     }
   })
 
 }
 
+function generateLoaders(loader) {
+  return [{
+    loader: loader + '-loader',
+    options: {
+      sourceMap: false
+    }
+  }]
+}
