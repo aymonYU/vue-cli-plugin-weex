@@ -2,7 +2,6 @@ const path = require('path')
 const BannerPlugin = require('vue-banner-plugin')
 
 module.exports = (api, options) => {
-  
   api.chainWebpack(async (configChain, options = {}) => {
     const isProduction = process.env.NODE_ENV === 'production'
 
@@ -17,11 +16,21 @@ module.exports = (api, options) => {
           appendTsSuffixTo: [/\.vue$/]
         })
     }
-    const platform = process.env.PLATFORM
+    const platform = process.env.PLATFORM || 'web'
 
+    configChain
+      .plugin('define-platform')
+      .use(require('webpack/lib/DefinePlugin'), [{
+        'process.env': {
+          PLATFORM: JSON.stringify(platform)
+        }
+      }])
+
+    configChain.resolve.alias.set('@platform', `./${platform}`)
+
+    //platform for weex env
     if (platform === 'weex') {
       configChain.module.rules.delete('vue')
-
       configChain.module.rule('weex')
         .test(/\.vue$/)
         .use('weex-loader')
@@ -51,30 +60,25 @@ module.exports = (api, options) => {
         .use('null-loader')
         .loader('null-loader')
 
-
       configChain.externals({
         'vue': 'Vue'
       })
-
       configChain.plugin('bannerPlugin')
         .use(BannerPlugin, [{
           banner: '// { "framework": "Vue"} \n',
           raw: true,
           exclude: 'Vue'
         }])
-
       configChain.merge({
         devServer: {
           port: 9394,
           contentBase: path.resolve(__dirname, 'web'),
         }
       })
-
       if (isProduction) {
         // 避免分包
         configChain.optimization.clear()
       }
-
     } else {
       configChain.merge({
         devServer: {
@@ -95,11 +99,9 @@ module.exports = (api, options) => {
               }
             }]
           }
-
         })
     }
   })
-
 }
 
 function generateLoaders(loader) {
