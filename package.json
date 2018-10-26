@@ -16,6 +16,7 @@
     "postcss-plugin-px2rem": "^0.7.0",
     "postcss-plugin-weex": "^0.1.7",
     "vue-banner-plugin": "^1.0.0",
+    "webpack": "^4.23.1",
     "weex-loader": "^0.7.2",
     "weex-vue-precompiler": "^0.1.25"
   },
