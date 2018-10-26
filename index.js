@@ -2,9 +2,40 @@ const path = require('path')
 const BannerPlugin = require('vue-banner-plugin')
 
 module.exports = (api, options) => {
+  const platform = process.env.PLATFORM || 'web'
+  const isProduction = process.env.NODE_ENV === 'production'
   api.chainWebpack(async (configChain, options = {}) => {
-    const isProduction = process.env.NODE_ENV === 'production'
+    const currentWebpackConfig = configChain.toConfig();
+    const entryKeys = Object.keys(currentWebpackConfig.entry);//入口的key
+    const htmlPluginKeys = entryKeys.map(item=>`html-${item}`);//每个入口对应的htmlPlugin的插件名
 
+    htmlPluginKeys.map((pluginKey, index) => {
+        configChain.plugin(pluginKey).tap(args => {
+            if(Array.isArray(args) && args.length>0){
+                //判断是否有title
+                if(!args[0].title){
+                    //如果没有就帮忙设置title为入口名
+                    if(platform === 'weex'){
+                        args[0].title = `weex ${entryKeys[index]}`
+                    }else{
+                        args[0].title = entryKeys[index]
+                    }
+                }
+                if(platform === 'weex'){
+                    //weex强制设置
+                    args[0].template = `./node_modules/vue-cli-plugin-weex/web/preview.html`
+                }
+                //判断是否有template
+                if(!args[0].template){
+                    //web没有的话，设置默认值
+                    if(platform !== 'weex'){
+                        args[0].template = `./node_modules/vue-cli-plugin-weex/web/index.html`
+                    }
+                }
+            }
+            return args;
+        })
+    })
     // it work when pacage.json have typscript plugin
     if (api.hasPlugin('typescript')) {
       configChain.module.rules.delete('ts')
@@ -16,7 +47,6 @@ module.exports = (api, options) => {
           appendTsSuffixTo: [/\.vue$/]
         })
     }
-    const platform = process.env.PLATFORM || 'web'
 
     configChain
       .plugin('define-platform')
