@@ -4,10 +4,12 @@ const BannerPlugin = require('vue-banner-plugin')
 module.exports = (api, options) => {
   const platform = process.env.PLATFORM || 'web'
   const isProduction = process.env.NODE_ENV === 'production'
+  const isWeex = platform === 'weex'
   api.chainWebpack(async (configChain, options = {}) => {
     const currentWebpackConfig = configChain.toConfig();
     const entryKeys = Object.keys(currentWebpackConfig.entry);//入口的key
     const htmlPluginKeys = entryKeys.map(item=>`html-${item}`);//每个入口对应的htmlPlugin的插件名
+    
 
     htmlPluginKeys.map((pluginKey, index) => {
         configChain.plugin(pluginKey).tap(args => {
@@ -15,21 +17,21 @@ module.exports = (api, options) => {
                 //判断是否有title
                 if(!args[0].title){
                     //如果没有就帮忙设置title为入口名
-                    if(platform === 'weex'){
+                    if(isWeex){
                         args[0].title = `weex ${entryKeys[index]}`
                     }else{
                         args[0].title = entryKeys[index]
                     }
                 }
-                if(platform === 'weex'){
+                if(isWeex){
                     //weex强制设置
-                    args[0].template = `./node_modules/vue-cli-plugin-weex/web/preview.html`
+                    args[0].template = path.resolve(__dirname,'./web/preview.html')
                 }
                 //判断是否有template
                 if(!args[0].template){
                     //web没有的话，设置默认值
-                    if(platform !== 'weex'){
-                        args[0].template = `./node_modules/vue-cli-plugin-weex/web/index.html`
+                    if(!isWeex){
+                        args[0].template =  path.resolve(__dirname,'./web/index.html')
                     }
                 }
             }
@@ -59,7 +61,7 @@ module.exports = (api, options) => {
     configChain.resolve.alias.set('@platform', `./${platform}`)
 
     //platform for weex env
-    if (platform === 'weex') {
+    if (isWeex) {
       configChain.module.rules.delete('vue')
       configChain.module.rule('weex')
         .test(/\.vue$/)
