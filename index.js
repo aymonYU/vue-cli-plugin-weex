@@ -112,6 +112,9 @@ module.exports = (api, options) => {
         configChain.optimization.clear()
       }
     } else {
+      configChain.externals({	
+        'weex-vue-render': 'weex'
+      })
       configChain.merge({
         devServer: {
           port: 8089,
