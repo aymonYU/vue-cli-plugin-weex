@@ -1,30 +1,18 @@
 <template>
-  <div class="app">
-    <div>page1 </div>
-    <HelloWorld msg="Welcome to Your weex + TypeScript App"/>
+  <div >
+    <text>hello </text>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
 import { Component,Prop } from 'vue-property-decorator'
-import HelloWorld from './HelloWorld.vue'
 
 // vue的typscrpt版本,component必须使用装饰器来，装饰器必须和class紧贴
-@Component({
-  components: {
-    HelloWorld
-  }
-})
+@Component
 export default class App extends Vue {
 }
 </script>
 
 <style>
-.app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>

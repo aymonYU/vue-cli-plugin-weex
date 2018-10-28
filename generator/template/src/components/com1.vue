@@ -1,6 +1,6 @@
 <template>
-  <div class="wrapper">
-    <text class="greeting">this is page1</text>
+  <div>
+    <text >hello</text>
   </div>
 </template>
 
@@ -15,16 +15,6 @@ export default {
 }
 </script>
 
-<style scoped>
-  .wrapper {
-    justify-content: center;
-    align-items: center;
-  }
-  .greeting {
-    text-align: center;
-    margin-top: 70px;
-    font-size: 50px;
-    color: #41B883;
-  }
+<style >
 
 </style>
