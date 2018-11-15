@@ -46,7 +46,8 @@ module.exports = (api, options) => {
         .use('ts-loader')
         .loader('ts-loader')
         .options({
-          appendTsSuffixTo: [/\.vue$/]
+          appendTsSuffixTo: [/\.vue$/],
+          allowTsInNodeModules: true
         })
     }
 
