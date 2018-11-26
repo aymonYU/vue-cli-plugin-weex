@@ -62,16 +62,6 @@ module.exports = (api, options) => {
         //platform for weex env
         if (isWeex) {
             configChain.module.rules.delete('vue')
-            configChain.module.rules.delete('ts')
-            configChain.module.rule('ts')
-                .test(/\.ts$/)
-                .use('ts-loader')
-                .loader('ts-loader')
-                .options({
-                    appendTsSuffixTo: [/\.vue$/],
-                    allowTsInNodeModules: true,
-                    happyPackMode: true
-                })
             configChain.module.rule('weex')
                 .test(/\.vue$/)
                 .use('weex-loader')
