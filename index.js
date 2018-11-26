@@ -66,10 +66,11 @@ module.exports = (api, options) => {
             configChain.module.rule('ts')
                 .test(/\.ts$/)
                 .use('ts-loader')
-                .loader('ts-loader?transpileOnly=true')
+                .loader('ts-loader')
                 .options({
                     appendTsSuffixTo: [/\.vue$/],
                     allowTsInNodeModules: true,
+                    happyPackMode: true
                 })
             configChain.module.rule('weex')
                 .test(/\.vue$/)
@@ -81,7 +82,7 @@ module.exports = (api, options) => {
                         // sass: generateLoaders('sass'),
                         // scss: generateLoaders('scss'),
                         // stylus: generateLoaders('stylus'),
-                        ts:[ {loader: 'ts-loader',options: { appendTsSuffixTo: [ /\.vue$/ ], transpileOnly: true } } ] ,
+                        ts:[ {loader: 'ts-loader',options: { appendTsSuffixTo: [ /\.vue$/ ], transpileOnly: true ,happyPackMode: true} } ] ,
                     }
                 })
 
