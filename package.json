@@ -1,6 +1,6 @@
 {
   "name": "vue-cli-plugin-weex",
-  "version": "1.1.6",
+  "version": "1.1.12",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "postcss-plugin-weex": "^0.1.7",
     "vue-banner-plugin": "^1.0.0",
     "webpack": "^4.23.1",
-    "weex-loader": "^0.7.2",
+    "weex-loader": "^0.7.12",
     "weex-vue-precompiler": "^0.1.25"
   },
   "keywords": [

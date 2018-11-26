@@ -104,7 +104,7 @@
 
             }
             var port = window.location.port;
-            createQRCode('http://' + ip + ':' + port + '/' + (page || 'index.js'));
+            createQRCode('http://' + ip + ':' + port + '/' + (page.replace('.js','.weex.js') || 'index.js'));
 
             // 显式的增加展示web地址
             var webPort = getUrlParam('webPort') || 8089;
