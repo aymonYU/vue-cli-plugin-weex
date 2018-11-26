@@ -13,45 +13,40 @@ module.exports = (api, options) => {
         const entryKeys = Object.keys(currentWebpackConfig.entry); //入口的key
         const htmlPluginKeys = entryKeys.map(item => `html-${item}`); //每个入口对应的htmlPlugin的插件名
 
-
-        htmlPluginKeys.map((pluginKey, index) => {
-            configChain.plugin(pluginKey).tap(args => {
-                if (Array.isArray(args) && args.length > 0) {
-                    //判断是否有title
-                    if (!args[0].title) {
-                        //如果没有就帮忙设置title为入口名
-                        if (isWeex) {
-                            args[0].title = `weex ${entryKeys[index]}`
-                        } else {
-                            args[0].title = entryKeys[index]
-                        }
-                    }
-                    if (isWeex) {
-                        //weex强制设置
-                        args[0].template = path.resolve(__dirname, './web/preview.html')
-                    }
-                    //判断是否有template
-                    if (!args[0].template) {
-                        //web没有的话，设置默认值
-                        if (!isWeex) {
-                            args[0].template = path.resolve(__dirname, './web/index.html')
-                        }
-                    }
-                }
-                return args;
+        if(isWeex&&isProduction){
+            entryKeys.forEach(item=>{
+                configChain.plugins.delete(`html-${item}`)
+                configChain.plugins.delete(`preload-${item}`)
+                configChain.plugins.delete(`prefetch-${item}`)
             })
-        })
-        // it work when pacage.json have typscript plugin
-        if (api.hasPlugin('typescript')) {
-            configChain.module.rules.delete('ts')
-            configChain.module.rule('ts')
-                .test(/\.ts$/)
-                .use('ts-loader')
-                .loader('ts-loader')
-                .options({
-                    appendTsSuffixTo: [/\.vue$/],
-                    allowTsInNodeModules: true
+        }else{
+            htmlPluginKeys.map((pluginKey, index) => {
+                configChain.plugin(pluginKey).tap(args => {
+                    if (Array.isArray(args) && args.length > 0) {
+                        //判断是否有title
+                        if (!args[0].title) {
+                            //如果没有就帮忙设置title为入口名
+                            if (isWeex) {
+                                args[0].title = `weex ${entryKeys[index]}`
+                            } else {
+                                args[0].title = entryKeys[index]
+                            }
+                        }
+                        if (isWeex) {
+                            //weex强制设置
+                            args[0].template = path.resolve(__dirname, './web/preview.html')
+                        }
+                        //判断是否有template
+                        if (!args[0].template) {
+                            //web没有的话，设置默认值
+                            if (!isWeex) {
+                                args[0].template = path.resolve(__dirname, './web/index.html')
+                            }
+                        }
+                    }
+                    return args;
                 })
+            })
         }
 
         configChain
@@ -67,20 +62,27 @@ module.exports = (api, options) => {
         //platform for weex env
         if (isWeex) {
             configChain.module.rules.delete('vue')
+            configChain.module.rules.delete('ts')
+            configChain.module.rule('ts')
+                .test(/\.ts$/)
+                .use('ts-loader')
+                .loader('ts-loader?transpileOnly=true')
+                .options({
+                    appendTsSuffixTo: [/\.vue$/],
+                    allowTsInNodeModules: true,
+                })
             configChain.module.rule('weex')
                 .test(/\.vue$/)
                 .use('weex-loader')
                 .loader('weex-loader')
                 .options({
                     loaders: {
-                        less: generateLoaders('less'),
-                        sass: generateLoaders('sass'),
-                        scss: generateLoaders('scss'),
-                        stylus: generateLoaders('stylus'),
-                        styl: generateLoaders('styl'),
-                    },
-                    cssSourceMap: false,
-                    cacheBusting: true
+                        // less: generateLoaders('less'),
+                        // sass: generateLoaders('sass'),
+                        // scss: generateLoaders('scss'),
+                        // stylus: generateLoaders('stylus'),
+                        ts:[ {loader: 'ts-loader',options: { appendTsSuffixTo: [ /\.vue$/ ], transpileOnly: true } } ] ,
+                    }
                 })
 
             configChain.plugins.delete('vue-loader')
@@ -136,21 +138,19 @@ module.exports = (api, options) => {
                     port: defaultWebPort,
                 }
             })
-            configChain.module.rules.delete('vue')
-            configChain.module.rule('vue')
-                .test(/\.vue$/)
-                .use('vue-loader')
-                .loader('vue-loader')
-                .options({
-                    compilerOptions: {
-                        modules: [{
-                            postTransformNode: el => {
-                                // to convert vnode for weex components.
-                                require('weex-vue-precompiler')()(el)
-                            }
-                        }]
-                    }
-                })
+            configChain.module.rule('vue').use('vue-loader').loader('vue-loader').tap(options => {
+                options = Object.assign({}, options)
+                options.compilerOptions= {
+                    modules: [{
+                        postTransformNode: el => {
+                            // to convert vnode for weex components.
+                            require('weex-vue-precompiler')()(el)
+                        }
+                    }]
+                }
+                return options
+            })
+          
         }
     })
 }
