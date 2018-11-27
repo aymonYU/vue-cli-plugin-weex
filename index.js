@@ -13,13 +13,13 @@ module.exports = (api, options) => {
         const entryKeys = Object.keys(currentWebpackConfig.entry); //入口的key
         const htmlPluginKeys = entryKeys.map(item => `html-${item}`); //每个入口对应的htmlPlugin的插件名
 
-        if(isWeex&&isProduction){
-            entryKeys.forEach(item=>{
+        if (isWeex && isProduction) {
+            entryKeys.forEach(item => {
                 configChain.plugins.delete(`html-${item}`)
                 configChain.plugins.delete(`preload-${item}`)
                 configChain.plugins.delete(`prefetch-${item}`)
             })
-        }else{
+        } else {
             htmlPluginKeys.map((pluginKey, index) => {
                 configChain.plugin(pluginKey).tap(args => {
                     if (Array.isArray(args) && args.length > 0) {
@@ -72,7 +72,14 @@ module.exports = (api, options) => {
                         // sass: generateLoaders('sass'),
                         // scss: generateLoaders('scss'),
                         // stylus: generateLoaders('stylus'),
-                        ts:[ {loader: 'ts-loader',options: { appendTsSuffixTo: [ /\.vue$/ ], transpileOnly: true ,happyPackMode: true} } ] ,
+                        ts: [{
+                            loader: 'ts-loader',
+                            options: {
+                                appendTsSuffixTo: [/\.vue$/],
+                                transpileOnly: true,
+                                happyPackMode: true
+                            }
+                        }],
                     }
                 })
 
@@ -131,17 +138,20 @@ module.exports = (api, options) => {
             })
             configChain.module.rule('vue').use('vue-loader').loader('vue-loader').tap(options => {
                 options = Object.assign({}, options)
-                options.compilerOptions= {
+                options.compilerOptions = {
                     modules: [{
                         postTransformNode: el => {
                             // to convert vnode for weex components.
                             require('weex-vue-precompiler')()(el)
                         }
-                    }]
+                    }],
+                    isUnaryTag: makeMap(
+                        'area,base,br,col,embed,frame,hr,img,image,input,isindex,keygen,' +
+                        'link,meta,param,source,track,wbr'
+                    ), // 这里主要是添加了image标签的支持，因为format函数会把image的闭合给干掉，但是vue默认又是要检测的，所以这里新增允许image不闭合
                 }
                 return options
             })
-          
         }
     })
 }
@@ -153,4 +163,26 @@ function generateLoaders(loader) {
             sourceMap: false
         }
     }]
+}
+
+/**
+ * Make a map and return a function for checking if a key
+ * is in that map.
+ */
+function makeMap(
+    str,
+    expectsLowerCase
+) {
+    var map = Object.create(null);
+    var list = str.split(',');
+    for (var i = 0; i < list.length; i++) {
+        map[list[i]] = true;
+    }
+    return expectsLowerCase ?
+        function (val) {
+            return map[val.toLowerCase()];
+        } :
+        function (val) {
+            return map[val];
+        }
 }
