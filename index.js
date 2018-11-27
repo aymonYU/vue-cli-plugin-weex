@@ -12,6 +12,7 @@ module.exports = (api, options) => {
         const currentWebpackConfig = configChain.toConfig();
         const entryKeys = Object.keys(currentWebpackConfig.entry); //入口的key
         const htmlPluginKeys = entryKeys.map(item => `html-${item}`); //每个入口对应的htmlPlugin的插件名
+        const isTs = api.hasPlugin('typescript')
 
         if (isWeex && isProduction) {
             entryKeys.forEach(item => {
@@ -67,11 +68,7 @@ module.exports = (api, options) => {
                 .use('weex-loader')
                 .loader('weex-loader')
                 .options({
-                    loaders: {
-                        // less: generateLoaders('less'),
-                        // sass: generateLoaders('sass'),
-                        // scss: generateLoaders('scss'),
-                        // stylus: generateLoaders('stylus'),
+                    loaders: isTs ? {
                         ts: [{
                             loader: 'ts-loader',
                             options: {
@@ -80,7 +77,7 @@ module.exports = (api, options) => {
                                 happyPackMode: true
                             }
                         }],
-                    }
+                    } : {}
                 })
 
             configChain.plugins.delete('vue-loader')
@@ -156,14 +153,6 @@ module.exports = (api, options) => {
     })
 }
 
-function generateLoaders(loader) {
-    return [{
-        loader: loader + '-loader',
-        options: {
-            sourceMap: false
-        }
-    }]
-}
 
 /**
  * Make a map and return a function for checking if a key
