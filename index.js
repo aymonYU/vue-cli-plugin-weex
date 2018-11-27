@@ -6,7 +6,7 @@ module.exports = (api, options) => {
     const platform = process.env.PLATFORM || 'web'
     const isProduction = process.env.NODE_ENV === 'production'
     const isWeex = platform === 'weex'
-    const defaultWeexPort = 9394;
+    const defaultWeexPort = 8092;
     const defaultWebPort = 8089;
     api.chainWebpack(async (configChain, options = {}) => {
         const currentWebpackConfig = configChain.toConfig();
