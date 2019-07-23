@@ -4,8 +4,12 @@ const ip = require('ip').address()
 
 module.exports = (api, options) => {
     const platform = process.env.PLATFORM || 'web'
-    const isProduction = process.env.NODE_ENV === 'production'
     const isWeex = platform === 'weex'
+    const isWeb = platform === 'web'
+    if(!isWeb&&!isWeex){
+        return
+    }
+    const isProduction = process.env.NODE_ENV === 'production'
     const defaultWeexPort = 8092;
     const defaultWebPort = 8089;
     api.chainWebpack(async (configChain, options = {}) => {
