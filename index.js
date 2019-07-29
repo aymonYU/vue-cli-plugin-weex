@@ -67,22 +67,24 @@ module.exports = (api, options) => {
         //platform for weex env
         if (isWeex) {
             configChain.module.rules.delete('vue')
-            configChain.module.rule('weex')
-                .test(/\.vue$/)
-                .use('weex-loader')
-                .loader('weex-loader')
-                .options({
-                    loaders: isTs ? {
-                        ts: [{
-                            loader: 'ts-loader',
-                            options: {
-                                appendTsSuffixTo: [/\.vue$/],
-                                transpileOnly: true,
-                                happyPackMode: true
-                            }
-                        }],
-                    } : {}
-                })
+            if(!configChain.module.rules.has('weex')){
+                configChain.module.rule('weex')
+                    .test(/\.vue$/)
+                    .use('weex-loader')
+                    .loader('weex-loader')
+                    .options({
+                        loaders: isTs ? {
+                            ts: [{
+                                loader: 'ts-loader',
+                                options: {
+                                    appendTsSuffixTo: [/\.vue$/],
+                                    transpileOnly: true,
+                                    happyPackMode: true
+                                }
+                            }],
+                        } : {}
+                    })
+            }
 
             configChain.plugins.delete('vue-loader')
             configChain.plugins.delete('hmr')
