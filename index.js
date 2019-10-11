@@ -1,6 +1,20 @@
 const path = require('path')
 const BannerPlugin = require('vue-banner-plugin')
 const ip = require('ip').address()
+const HTMLPlugin = require('html-webpack-plugin')
+const fs = require('fs')
+let execSync = require('child_process').execSync;
+const defaultWeexPort = portIsOccupied(8092)
+const defaultWebPort =  portIsOccupied(8089)
+console.log('web port:'+ defaultWebPort,' weex port:'+ defaultWeexPort)
+
+//生成port.js文件
+fs.writeFileSync(path.resolve(__dirname,'./web/assets/port.js'),`
+(function port(win) {
+    win.weexPort = "${defaultWeexPort}";
+    win.webPort = "${defaultWebPort}";
+})(window)
+`)
 
 module.exports = (api, options) => {
     const platform = process.env.PLATFORM || 'web'
@@ -10,15 +24,13 @@ module.exports = (api, options) => {
         return
     }
     const isProduction = process.env.NODE_ENV === 'production'
-    const defaultWeexPort = 8092;
-    const defaultWebPort = 8089;
     api.chainWebpack(async (configChain, options = {}) => {
         const currentWebpackConfig = configChain.toConfig();
         const entryKeys = Object.keys(currentWebpackConfig.entry); //入口的key
         const htmlPluginKeys = entryKeys.map(item => `html-${item}`); //每个入口对应的htmlPlugin的插件名
         const isTs = api.hasPlugin('typescript')
 
-        if (isWeex && isProduction) {
+        if (isWeex) {
             entryKeys.forEach(item => {
                 configChain.plugins.delete(`html-${item}`)
                 configChain.plugins.delete(`preload-${item}`)
@@ -37,10 +49,6 @@ module.exports = (api, options) => {
                                 args[0].title = entryKeys[index]
                             }
                         }
-                        if (isWeex) {
-                            //weex强制设置
-                            args[0].template = path.resolve(__dirname, './web/preview.html')
-                        }
                         //判断是否有template
                         if (!args[0].template) {
                             //web没有的话，设置默认值
@@ -52,6 +60,12 @@ module.exports = (api, options) => {
                     return args;
                 })
             })
+            configChain.plugin(`html-preview-qr`)
+                .use(HTMLPlugin, [{
+                    template: path.resolve(__dirname, './web/preview.html'),
+                    filename: 'preview.html',
+                    title: 'preview'
+                }])
         }
 
         configChain
@@ -104,7 +118,12 @@ module.exports = (api, options) => {
             })
             configChain.plugin('bannerPlugin')
                 .use(BannerPlugin, [{
-                    banner: `// { "framework": "Vue"} \n typeof Vue.apply === 'undefined' && (Vue.apply = (self, args) => Reflect.apply(Vue, self, args)) \n`,
+                    banner: `// { "framework": "Vue"}
+;(function vueApply() {
+    if (typeof Vue !== 'undefined' && typeof Vue.apply === 'undefined') {
+        Vue.apply = (self, args) => Reflect.apply(Vue, self, args)
+    }
+})(); \n`,
                     raw: true,
                     exclude: 'Vue'
                 }])
@@ -177,4 +196,16 @@ function makeMap(
         function (val) {
             return map[val];
         }
+}
+
+function portIsOccupied (port){
+    try{
+        if(execSync(process.platform=='win32'? `netstat -ano|findstr ":${port}"` : `lsof -i:${port} | grep -c -n .`)){
+            console.log(`this port ${port} is occupied.try another.`)
+            return portIsOccupied(port+1)
+        }
+    }catch(e){
+        
+    }
+    return port
 }
