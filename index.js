@@ -104,7 +104,7 @@ module.exports = (api, options) => {
             })
             configChain.plugin('bannerPlugin')
                 .use(BannerPlugin, [{
-                    banner: '// { "framework": "Vue"} \n',
+                    banner: `// { "framework": "Vue"} \n typeof Vue.apply === 'undefined' && (Vue.apply = (self, args) => Reflect.apply(Vue, self, args)) \n`,
                     raw: true,
                     exclude: 'Vue'
                 }])
