@@ -121,7 +121,10 @@ module.exports = (api, options) => {
                     banner: `// { "framework": "Vue"}
 ;(function vueApply() {
     if (typeof Vue !== 'undefined' && typeof Vue.apply === 'undefined') {
-        Vue.apply = (self, args) => Reflect.apply(Vue, self, args)
+        const functionProtos = ["call", "apply", "bind"]
+        functionProtos.forEach((key) => {
+            Reflect.set(Vue, key, Reflect.get(Function, key))
+        })
     }
 })(); \n`,
                     raw: true,
